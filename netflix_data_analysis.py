@@ -22,15 +22,12 @@ def scroll_down():
     with c1:
         st.subheader('.')
         st.subheader('.')
-        # st.subheader('.')
     with c2:
         st.write('')
         st.write('')
-        # st.write('')
     with c3:
         st.write('')
         st.write('')
-        # st.write('')
 
 
 image = '<svg xmlns="http://www.w3.org/2000/svg" width="222px" height="222px" viewBox="-49.6 0 222 222" ' \
@@ -87,14 +84,12 @@ uploaded_file = st.sidebar.file_uploader('')
 if uploaded_file is not None:
     if uploaded_file.name == "ViewingActivity_.csv":
         st.sidebar.subheader('3 - Analyze and chill')
-    # else:
-    #     st.sidebar.subheader("3 - You didn't upload the correct file")
     try:
         df = pd.read_csv(uploaded_file)
     except UnicodeDecodeError:
         write("You've uploaded the wrong file")
-    # Drop unnecessary columns
     try:
+        # Drop unnecessary columns
         df = df.drop(['Attributes', 'Supplemental Video Type', 'Device Type', 'Bookmark', 'Latest Bookmark'], axis=1)
         # Remove whitespace in column names
         df.columns = [column.replace(' ', '_') for column in df.columns]
