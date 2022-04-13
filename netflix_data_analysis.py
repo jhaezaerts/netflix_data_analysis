@@ -9,7 +9,7 @@ import os.path
 import pickle as pkle
 
 
-# Netflix Rewind App
+# Functions and variables
 
 
 def write(text):
@@ -145,7 +145,7 @@ if uploaded_file is not None:
              'Season', 'Episode']]
 
 
-        ### Main Page Content ###
+        ### Main Page II ###
         profiles = df['Profile_Name'].unique()
         select_profile = st.selectbox('PICK YOUR PROFILE', profiles)
         st.markdown('#')
