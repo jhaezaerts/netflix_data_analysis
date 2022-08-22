@@ -68,14 +68,6 @@ with col3:
     st.write('')
 st.markdown('#')
 
-# st.write("Each year, Spotify shares a summary of your listening behaviour. Something many people happily share on "
-#          "their Instagram stories. _'Look how many hours I spent listening to music! Let's see how many more I can get "
-#          "next year!'_ So why doesn't Netflix share with us such a summary? Can you guess? Maybe it's because for some,"
-#          " a Netflix rewind feels more like an intervention rather than a cool analysis you can show off to your "
-#          "friends. I can imagine sitting through a Netflix rewind and feeling like a lazy, useless piece of garbage by "
-#          "the time it's done. It's not unlikely that a Netflix rewind would reduce watching behaviour rather than "
-#          "increase it. Anyway, this app means to lift the veil on your personal Netflix viewing behaviour. All you need"
-#          " to do is upload your data and pick a profile. Have fun!")
 
 ### Sidebar ###
 st.sidebar.subheader("1- Request your [Netflix data](https://www.netflix.com/account/getmyinfo)")
@@ -154,45 +146,45 @@ if uploaded_file is not None:
             if select_profile == name:
                 df = df[df['Profile_Name'] == name]
                 df = df.reset_index(drop=True)
-                st.subheader('First things first. The first piece of content you ever watched on this Netflix account is')
+                st.subheader('First things first. The first piece of content you ever watched on this Netflix profile is')
                 write(df['Title'][-1:].to_string(index=False))
                 write(df['Local_Start_Time'][-1:].to_string(index=False))
 
-                scroll_down()
+                st.markdown("""---""")
 
                 start_times_by_hour = df['Hour'].value_counts().reset_index()
                 st.subheader("You're most likely to be watching Netflix between ")
                 write(start_times_by_hour['index'][0].astype(str) + "h and " +
                       (start_times_by_hour['index'][0] + 1).astype(str) + "h")
 
-                scroll_down()
+                st.markdown("""---""")
 
                 st.subheader('Your favourite day of the week for watching Netflix is')
                 start_times_by_day = df['Weekday'].value_counts().reset_index()
                 write(calendar.day_name[start_times_by_day['index'][0]])
 
-                scroll_down()
+                st.markdown("""---""")
 
                 morning_hours = start_times_by_hour.sort_values('index')[6:12]['Hour'].sum()
                 total_hours = start_times_by_hour['Hour'].sum()
-                st.subheader('Out of all the time you have spent watching Netflix, ')
+                st.subheader('Morning person? Out of all the time you have spent watching Netflix, ')
                 write(round(((morning_hours / total_hours) * 100), 2).astype(str) + '%')
-                st.subheader(' of it occurred between 6AM and 12PM')
+                st.subheader(' of it occurred in the morning (6am-12pm)')
 
-                scroll_down()
+                st.markdown("""---""")
 
-                st.subheader('The percentage of time spent on Netflix between 9AM and 6PM on workdays is')
+                st.subheader('Worktime watcher? The percentage of time spent on Netflix during work hours (9am-6pm) on workdays is')
                 worktime = df[df['Weekday'] < 5]['Hour'].value_counts().reset_index().sort_values('index')[9:18][
                     'Hour'].sum()
                 write(round(((worktime / total_hours) * 100), 2).astype(str) + '%')
 
-                scroll_down()
+                st.markdown("""---""")
 
-                st.subheader('Your overall time spent watching Netflix since the creation of your account is ')
+                st.subheader('Your overall time spent watching Netflix since the creation of your profile is ')
                 overall_time_spent = df['Duration'].sum()
                 write(str(overall_time_spent))
 
-                scroll_down()
+                st.markdown("""---""")
 
                 st.subheader("Here's a breakdown of your watching time by year")
                 time_spent_by_year = df.groupby('Year')['Duration'].sum().reset_index().to_string(index=False).split('\n')[
@@ -200,7 +192,7 @@ if uploaded_file is not None:
                 for year in time_spent_by_year:
                     write(year.strip().replace(' ', ':\t', 1))
 
-                scroll_down()
+                st.markdown("""___""")
 
                 max_year = df['Year'].max()
                 st.subheader("And here's how you're doing by month in " + str(max_year))
@@ -211,22 +203,21 @@ if uploaded_file is not None:
                 for month in time_spent_by_month_2022:
                     write(month.strip().replace(' ', ':\t', 1))
 
-                scroll_down()
+                st.markdown("""---""")
 
                 start_date = datetime.datetime(2022, 1, 1)
                 max_date = datetime.datetime.now()
                 ytd_time = str(max_date - start_date).split(',')[0]
                 ytd_netflix = df[df['Year'] == max_year]['Duration'].sum()
+
                 time_spent_pct = str(round((ytd_netflix / ytd_time) * 100, 2))
                 st.subheader(
-                    ytd_time + ". That's the amount of time that has passed in " + str(max_year) + " up until today. "
-                                                                                                   "Given that you have spent " +
-                    str(ytd_netflix).split(' ', 1)[0] + " day(s) of it on "
-                                                        "Netflix, you have spent")
+                    ytd_time + ". That's the amount of time that has passed in " + str(max_year) + " up until today. Given that you have spent " +
+                    str(ytd_netflix).split(' ')[0] + " days " + "and " + str(ytd_netflix).split(' ')[2].split(':')[0] + " hours " + "(" + str(int(str(ytd_netflix).split(' ')[0])*24 + int(str(ytd_netflix).split(' ')[2].split(':')[0]))  + " hours)" + " of it on Netflix, you have spent")
                 write(time_spent_pct + '%')
                 st.subheader("of your time watching Netflix in " + str(max_year) + ".")
 
-                scroll_down()
+                st.markdown("""---""")
 
                 pd.options.display.max_colwidth = 100
                 st.subheader("Here's some information on your longest single day binge")
@@ -252,9 +243,9 @@ if uploaded_file is not None:
                       + single_day_binge['Season'][:1].to_string(index=False)
                       + ' -' + single_day_binge['Episode'][:1].to_string(index=False))
 
-                scroll_down()
+                st.markdown("""---""")
 
-                st.subheader("These are your top 5 favourite titles, the ones that you spent most time watching")
+                st.subheader("These are the shows that you spent most time watching")
                 most_popular_titles = df.groupby(['Title'])['Duration'].sum().reset_index()
                 most_popular_titles = most_popular_titles.rename(columns={"Duration": "Total_Duration"})
                 most_popular_titles = most_popular_titles.sort_values(by='Total_Duration', ascending=False).reset_index(
@@ -273,7 +264,7 @@ hide_streamlit_style = """
             <style>
             footer {visibility: hidden;}
             footer:after {
-	        content:'made by jorgo haezaerts :)';
+	        content:'made by jorgo haezaerts';
 	        visibility: visible;
 	        display: block;
 	        position: relative;
