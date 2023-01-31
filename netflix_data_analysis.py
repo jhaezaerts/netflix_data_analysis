@@ -9,12 +9,13 @@ import os.path
 import pickle as pkle
 
 
-# Functions and variables
+########################################################################################################################
+# Define functions and variables
+########################################################################################################################
 
 
 def write(text):
-    st.markdown(f'<p style="color:#E50914;font-size:28px;border-radius:2%;"><strong>{text}</strong></p>',
-                unsafe_allow_html=True)
+    st.markdown(f'<p style="color:#E50914;font-size:28px;border-radius:2%;"><strong>{text}</strong></p>', unsafe_allow_html=True)
 
 
 def scroll_down():
@@ -30,7 +31,7 @@ def scroll_down():
         st.write('')
 
 
-image = '<svg xmlns="http://www.w3.org/2000/svg" width="222px" height="222px" viewBox="-49.6 0 222 222" ' \
+netflix_logo = '<svg xmlns="http://www.w3.org/2000/svg" width="222px" height="222px" viewBox="-49.6 0 222 222" ' \
         'id="svg2"><style>.st0{fill:#b1060f;stroke:#000}.st1{fill:url(#path5719_1_)}.st2{fill:#e50914}</style><g ' \
         'id="layer1" transform="translate(12.495 6.756)"><g id="g4182"><g id="g5747" transform="translate(81.631 ' \
         '113.771) scale(.29074)"><path id="path4155" class="st0" d="M-52.5-412.3l-.3 168-.3 168-13.8-39v-.1l-17.9 ' \
@@ -55,31 +56,43 @@ image = '<svg xmlns="http://www.w3.org/2000/svg" width="222px" height="222px" vi
         '1.1L-53.1-76.4v.1l-13.8-39c-13.5-38.1-22.5-63.6-76.8-217-14.6-41.3-27-76.2-27.5-77.8l-1-2.8h-74.9l-74.9.1z' \
         '"/></g></g></g></svg> '
 
-### Main Page I ###
+
+########################################################################################################################
+# Main Page I
+########################################################################################################################
+
+
 st.title('Welcome to your Netflix rewind')
+st.markdown('#')
 st.markdown('#')
 
 col1, col2, col3 = st.columns(3)
 with col1:
     st.write('')
 with col2:
-    st.image(image)
+    st.image(netflix_logo)
 with col3:
     st.write('')
 st.markdown('#')
 
 
-### Sidebar ###
-st.sidebar.subheader("1- Request your [Netflix data](https://www.netflix.com/account/getmyinfo)")
+########################################################################################################################
+# Sidebar
+########################################################################################################################
+
+
+st.sidebar.subheader("1 - Request your [Netflix data](https://www.netflix.com/account/getmyinfo)")
 st.sidebar.subheader("2 - Upload ViewingActivity.csv")
 uploaded_file = st.sidebar.file_uploader('')
 if uploaded_file is not None:
-    if uploaded_file.name == "ViewingActivity_.csv":
+    if uploaded_file.name == "ViewingActivity.csv":
         st.sidebar.subheader('3 - Analyze and chill')
     try:
         df = pd.read_csv(uploaded_file)
-    except UnicodeDecodeError:
+    except UnicodeDecodeError as ude:
+        print(ude)
         write("You've uploaded the wrong file")
+        df = None
     try:
         # Drop unnecessary columns
         df = df.drop(['Attributes', 'Supplemental Video Type', 'Device Type', 'Bookmark', 'Latest Bookmark'], axis=1)
@@ -89,32 +102,16 @@ if uploaded_file is not None:
         df['Start_Time'] = pd.to_datetime(df['Start_Time'], utc=True)
         # Change dtype to timedelta
         df['Duration'] = pd.to_timedelta(df['Duration'])
-        # Correct Start_Time based on the time zone in which the viewer was located
-        # Check in which countries the user has watched Netflix
-        # print(df['Country'].value_counts()) # uncomment here
-        # Create a list of conditions for each (set of) country(ies) with different time zones
-        countries = [
-            (df['Country'] == 'AU (Australia)'),
-            ((df['Country'] == 'BE (Belgium)') | (df['Country'] == 'US (United States)')),
-            (df['Country'] == 'PT (Portugal)')
-        ]
-        # create a list of time zones we want to assign to each country
-        timezones = ['Australia/Melbourne', 'Europe/Brussels', 'Europe/Lisbon']
-        # create a new column and use np.select to assign values to it using our lists as arguments
-        df['Local_Time_Zone'] = np.select(countries, timezones)
-        # Convert Start_Time to its correct time zone
-        df['Local_Start_Time'] = df.apply(lambda x: x['Start_Time'].tz_convert(x['Local_Time_Zone']), axis=1)
-        # Remove tz awareness and convert to datetime
-        df['Local_Start_Time'] = pd.to_datetime(df['Local_Start_Time'].astype("string").apply(lambda x: x[:-6]))
+        # Only keep data gathered in Belgium.
+        df = df[df['Country'] == 'BE (Belgium)']
         # Clean df for analysis
-        df = df.drop(['Start_Time', 'Local_Time_Zone'], axis=1)
-        df = df[['Profile_Name', 'Local_Start_Time', 'Duration', 'Title', 'Country']]
-        # Adding features for analysis
-        df['Weekday'] = df['Local_Start_Time'].dt.weekday
-        df['Hour'] = df['Local_Start_Time'].dt.hour
-        df['Day'] = df['Local_Start_Time'].dt.day
-        df['Month'] = df['Local_Start_Time'].dt.month
-        df['Year'] = df['Local_Start_Time'].dt.year
+        df = df[['Profile_Name', 'Start_Time', 'Duration', 'Title', 'Country']]
+        # Add features for further analysis
+        df['Weekday'] = df['Start_Time'].dt.weekday
+        df['Hour'] = df['Start_Time'].dt.hour
+        df['Day'] = df['Start_Time'].dt.day
+        df['Month'] = df['Start_Time'].dt.month
+        df['Year'] = df['Start_Time'].dt.year
         # Split title into multiple columns to generate more content-related features
         content = df['Title'].str.split(':', expand=True)
         # Create and clean new features
@@ -123,7 +120,7 @@ if uploaded_file is not None:
         content['Episode'] = content[2] + content[3] + content[4] + content[5]
         content = content.drop([2, 3, 4, 5], axis=1)
         content.rename(columns={0: "Title_right", 1: "Season"}, inplace=True)
-        #  Cleaning of new features
+        #  Clean new features
         content['part'] = np.where(content['Season'].str.contains('Season'), '', content['Season'])
         content['Season'] = np.where(content['Season'].str.contains('Season'), content['Season'], '')
         content['Episode'] = content['Episode'] + content['part']
@@ -132,12 +129,14 @@ if uploaded_file is not None:
         df = pd.concat([df.reset_index(drop=True), content.reset_index(drop=True)], axis=1)
         df = df.drop(['Title'], axis=1)
         df.rename({'Title_right': 'Title'}, inplace=True, axis=1)
-        df = df[
-            ['Profile_Name', 'Local_Start_Time', 'Duration', 'Country', 'Weekday', 'Hour', 'Day', 'Month', 'Year', 'Title',
-             'Season', 'Episode']]
+        df = df[['Profile_Name', 'Start_Time', 'Duration', 'Country', 'Weekday', 'Hour', 'Day', 'Month', 'Year', 'Title', 'Season', 'Episode']]
 
 
-        ### Main Page II ###
+########################################################################################################################
+# Main Page II
+########################################################################################################################
+
+
         profiles = df['Profile_Name'].unique()
         select_profile = st.selectbox('PICK YOUR PROFILE', profiles)
         st.markdown('#')
@@ -148,14 +147,13 @@ if uploaded_file is not None:
                 df = df.reset_index(drop=True)
                 st.subheader('First things first. The first piece of content you ever watched on this Netflix profile is')
                 write(df['Title'][-1:].to_string(index=False))
-                write(df['Local_Start_Time'][-1:].to_string(index=False))
+                write(df['Start_Time'][-1:].to_string(index=False))
 
                 st.markdown("""---""")
 
                 start_times_by_hour = df['Hour'].value_counts().reset_index()
                 st.subheader("You're most likely to be watching Netflix between ")
-                write(start_times_by_hour['index'][0].astype(str) + "h and " +
-                      (start_times_by_hour['index'][0] + 1).astype(str) + "h")
+                write(start_times_by_hour['index'][0].astype(str) + "h and " + (start_times_by_hour['index'][0] + 1).astype(str) + "h")
 
                 st.markdown("""---""")
 
@@ -169,51 +167,52 @@ if uploaded_file is not None:
                 total_hours = start_times_by_hour['Hour'].sum()
                 st.subheader('Morning person? Out of all the time you have spent watching Netflix, ')
                 write(round(((morning_hours / total_hours) * 100), 2).astype(str) + '%')
-                st.subheader(' of it occurred in the morning (6am-12pm)')
+                st.subheader(' of it occurred before noon (6am-12pm)')
 
                 st.markdown("""---""")
 
-                st.subheader('Worktime watcher? The percentage of time spent on Netflix during work hours (9am-6pm) on workdays is')
-                worktime = df[df['Weekday'] < 5]['Hour'].value_counts().reset_index().sort_values('index')[9:18][
-                    'Hour'].sum()
+                st.subheader('Worktime watcher? The percentage of time spent on Netflix during working hours (9am-5pm) on workdays is')
+                worktime = df[df['Weekday'] < 5]['Hour'].value_counts().reset_index().sort_values('index')[9:17]['Hour'].sum()
                 write(round(((worktime / total_hours) * 100), 2).astype(str) + '%')
 
                 st.markdown("""---""")
 
-                st.subheader('Your overall time spent watching Netflix since the creation of your profile is ')
+                st.subheader('Your overall time spent watching Netflix since the creation of your profile is approximately')
                 overall_time_spent = df['Duration'].sum()
-                write(str(overall_time_spent))
+                overall_time_spent_hours = int(overall_time_spent.total_seconds() / (60 * 60))
+                write(str(overall_time_spent_hours) + " hours (that's " + str(overall_time_spent).split(' ')[0] + " days!)")
 
                 st.markdown("""---""")
 
                 st.subheader("Here's a breakdown of your watching time by year")
-                time_spent_by_year = df.groupby('Year')['Duration'].sum().reset_index().to_string(index=False).split('\n')[
-                                     1:]
+                time_spent_by_year = df.groupby('Year')['Duration'].sum().reset_index().to_string(index=False).split('\n')[1:]
                 for year in time_spent_by_year:
-                    write(year.strip().replace(' ', ':\t', 1))
+                    write(year.strip().replace(' ', ' :  ', 1))
 
                 st.markdown("""___""")
 
                 max_year = df['Year'].max()
                 st.subheader("And here's how you're doing by month in " + str(max_year))
                 time_spent_by_month_2022 = df[df['Year'] == max_year].groupby('Month')['Duration'].sum().reset_index()
-                time_spent_by_month_2022['Month'] = time_spent_by_month_2022['Month'].apply(
-                    lambda x: calendar.month_name[x])
+                time_spent_by_month_2022['Month'] = time_spent_by_month_2022['Month'].apply(lambda x: calendar.month_name[x])
                 time_spent_by_month_2022 = time_spent_by_month_2022.to_string(index=False).split('\n')[1:]
                 for month in time_spent_by_month_2022:
-                    write(month.strip().replace(' ', ':\t', 1))
+                    write(month.strip().replace(' ', ' : ', 1))
 
                 st.markdown("""---""")
 
-                start_date = datetime.datetime(2022, 1, 1)
+                max_date = datetime.datetime.now()
+                start_date = datetime.datetime(max_date.year, 1, 1)
                 max_date = datetime.datetime.now()
                 ytd_time = str(max_date - start_date).split(',')[0]
                 ytd_netflix = df[df['Year'] == max_year]['Duration'].sum()
 
                 time_spent_pct = str(round((ytd_netflix / ytd_time) * 100, 2))
-                st.subheader(
-                    ytd_time + ". That's the amount of time that has passed in " + str(max_year) + " up until today. Given that you have spent " +
-                    str(ytd_netflix).split(' ')[0] + " days " + "and " + str(ytd_netflix).split(' ')[2].split(':')[0] + " hours " + "(" + str(int(str(ytd_netflix).split(' ')[0])*24 + int(str(ytd_netflix).split(' ')[2].split(':')[0]))  + " hours)" + " of it on Netflix, you have spent")
+                st.subheader(ytd_time + ". That's the amount of time that has passed in " + str(max_year) +
+                             " up until today. Given that you have spent " + str(ytd_netflix).split(' ')[0] + " days " +
+                             "and " + str(ytd_netflix).split(' ')[2].split(':')[0] + " hours " + "(" +
+                             str(int(str(ytd_netflix).split(' ')[0]) * 24 + int(str(ytd_netflix).split(' ')[2].split(':')[0])) +
+                             " hours)" + " of it on Netflix, you have spent")
                 write(time_spent_pct + '%')
                 st.subheader("of your time watching Netflix in " + str(max_year) + ".")
 
@@ -223,17 +222,15 @@ if uploaded_file is not None:
                 st.subheader("Here's some information on your longest single day binge")
                 single_day_binge = df.groupby(['Year', 'Month', 'Day'])['Duration'].sum().reset_index()
                 single_day_binge = single_day_binge.rename(columns={"Duration": "Sum_Duration"})
-                single_day_binge = pd.merge(df, single_day_binge, how='inner', left_on=['Year', 'Month', 'Day'],
-                                            right_on=['Year', 'Month', 'Day'])
-                # single_day_binge = single_day_binge.sort_values('Sum_Duration', ascending=False)
+                single_day_binge = pd.merge(df, single_day_binge, how='inner', left_on=['Year', 'Month', 'Day'], right_on=['Year', 'Month', 'Day'])
                 max_binge_time = single_day_binge['Sum_Duration'].max()
                 single_day_binge = single_day_binge[single_day_binge['Sum_Duration'] == max_binge_time]
                 st.subheader('This sitting went on for')
                 write(str(max_binge_time).split(' ')[-1])
                 st.subheader('It started at ')
-                write(single_day_binge['Local_Start_Time'].min())
+                write(str(single_day_binge['Start_Time'].min()).split('+')[0])
                 st.subheader("And ended at")
-                write(single_day_binge['Local_Start_Time'].max())
+                write((str(single_day_binge['Start_Time'].max() + single_day_binge['Duration'].iloc[0])).split('+')[0])
                 st.subheader('You started off with watching')
                 write(single_day_binge['Title'][-1:].to_string(index=False) + ' -'
                       + single_day_binge['Season'][-1:].to_string(index=False)
@@ -248,30 +245,33 @@ if uploaded_file is not None:
                 st.subheader("These are the shows that you spent most time watching")
                 most_popular_titles = df.groupby(['Title'])['Duration'].sum().reset_index()
                 most_popular_titles = most_popular_titles.rename(columns={"Duration": "Total_Duration"})
-                most_popular_titles = most_popular_titles.sort_values(by='Total_Duration', ascending=False).reset_index(
-                    drop=True)[:5]
+                most_popular_titles = most_popular_titles.sort_values(by='Total_Duration', ascending=False).reset_index(drop=True)[:5]
 
-                top_5 = [f"%s - %s" % title for title in
-                         zip(most_popular_titles['Title'], most_popular_titles['Total_Duration'])]
+                top_5 = [f"%s - %s" % title for title in zip(most_popular_titles['Title'], most_popular_titles['Total_Duration'])]
                 for i in range(len(top_5)):
                     write(str(i + 1) + '. ' + top_5[i])
-    except KeyError:
-        write("You've uploaded the wrong file")
-    except NameError:
-        write("")
+    except KeyError as ke:
+        print(ke)
+    except NameError as ne:
+        print(ne)
+
 
 hide_streamlit_style = """
-            <style>
-            footer {visibility: hidden;}
-            footer:after {
-	        content:'made by jorgo haezaerts';
-	        visibility: visible;
-	        display: block;
-	        position: relative;
-	        #background-color: red;
-	        padding: 5px;
-	        bottom: 10px;
-            </style>
-            """
-# #MainMenu {visibility: hidden;} maybe add later on
+                       <style>
+                       #MainMenu {visibility: hidden;}
+                       footer {visibility: hidden;}
+                       footer:after {
+                       content:'made by jorgo haezaerts';
+                       visibility: visible;
+                       display: block;
+                       position: relative;
+                       text-align: left;
+                       #background-color: red;
+                       padding: 5px;
+                       bottom: 10px;
+                       </style>
+                       """
 st.markdown(hide_streamlit_style, unsafe_allow_html=True)
+
+
+########################################################################################################################
