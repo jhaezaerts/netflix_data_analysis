@@ -32,7 +32,7 @@ def scroll_down():
 
 
 netflix_logo = '13502130_10153696123838870_522765110773053650_n-796x796-2.png'
-
+netflix_logo = Image.open('13502130_10153696123838870_522765110773053650_n-796x796-2.png')
 
 ########################################################################################################################
 # Main Page I
@@ -47,7 +47,7 @@ col1, col2, col3 = st.columns(3)
 with col1:
     st.write('')
 with col2:
-    st.image('./' + netflix_logo)
+    st.image(netflix_logo)
 with col3:
     st.write('')
 st.markdown('#')
