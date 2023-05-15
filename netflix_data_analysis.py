@@ -235,7 +235,6 @@ if uploaded_file is not None:
 
 hide_streamlit_style = """
                        <style>
-                       #MainMenu {visibility: hidden;}
                        footer {visibility: hidden;}
                        footer:after {
                        content:'made by jorgo haezaerts';
@@ -249,6 +248,8 @@ hide_streamlit_style = """
                        </style>
                        """
 st.markdown(hide_streamlit_style, unsafe_allow_html=True)
+
+#MainMenu {visibility: hidden;}
 
 
 ########################################################################################################################
