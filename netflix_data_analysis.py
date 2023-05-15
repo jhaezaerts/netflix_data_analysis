@@ -9,6 +9,7 @@ import os.path
 import pickle as pkle
 from pandasai import PandasAI
 from pandasai.llm.openai import OpenAI
+import openai
 
 
 ########################################################################################################################
