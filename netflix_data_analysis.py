@@ -10,13 +10,15 @@ import pickle as pkle
 from pandasai import PandasAI
 from pandasai.llm.openai import OpenAI
 
+
 ########################################################################################################################
 # Define functions and variables
 ########################################################################################################################
 
 
 def write(text):
-    st.markdown(f'<p style="color:#E50914;font-size:28px;border-radius:2%;"><strong>{text}</strong></p>', unsafe_allow_html=True)
+    st.markdown(f'<p style="color:#E50914;font-size:28px;border-radius:2%;"><strong>{text}</strong></p>',
+                unsafe_allow_html=True)
 
 
 def scroll_down():
@@ -31,7 +33,12 @@ def scroll_down():
         st.write('')
         st.write('')
 
-llm = OpenAI(api_token="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")
+
+# API Credentials
+openai.organization = st.secrets["OPENAI_ORG"]
+openai.api_key = st.secrets["OPENAI_API_KEY"]
+
+llm = OpenAI(api_token=openai.api_key)
 
 netflix_logo = 'netflix_logo_icon_170919.png'
 netflix_logo = Image.open(netflix_logo)
@@ -53,7 +60,6 @@ with col2:
 with col3:
     st.write('')
 st.markdown('#')
-
 
 ########################################################################################################################
 # Sidebar
@@ -108,12 +114,13 @@ if uploaded_file is not None:
         df = pd.concat([df.reset_index(drop=True), content.reset_index(drop=True)], axis=1)
         df = df.drop(['Title'], axis=1)
         df.rename({'Title_right': 'Title'}, inplace=True, axis=1)
-        df = df[['Profile_Name', 'Start_Time', 'Duration', 'Country', 'Weekday', 'Hour', 'Day', 'Month', 'Year', 'Title', 'Season', 'Episode']]
+        df = df[
+            ['Profile_Name', 'Start_Time', 'Duration', 'Country', 'Weekday', 'Hour', 'Day', 'Month', 'Year', 'Title',
+             'Season', 'Episode']]
 
-
-########################################################################################################################
-# Main Page II
-########################################################################################################################
+        ########################################################################################################################
+        # Main Page II
+        ########################################################################################################################
 
         t1, t2 = st.tabs(["Get ready-made analysis", "Perform GPT-powered analysis"])
         with t1:
@@ -125,7 +132,8 @@ if uploaded_file is not None:
                 if select_profile == name:
                     df = df[df['Profile_Name'] == name]
                     df = df.reset_index(drop=True)
-                    st.subheader('First things first. The first piece of content you ever watched on this Netflix profile is')
+                    st.subheader(
+                        'First things first. The first piece of content you ever watched on this Netflix profile is')
                     write(df['Title'][-1:].to_string(index=False))
                     write(df['Start_Time'][-1:].to_string(index=False))
 
@@ -133,7 +141,8 @@ if uploaded_file is not None:
 
                     start_times_by_hour = df['Hour'].value_counts().reset_index()
                     st.subheader("You're most likely to be watching Netflix between ")
-                    write(start_times_by_hour['index'][0].astype(str) + "h and " + (start_times_by_hour['index'][0] + 1).astype(str) + "h")
+                    write(start_times_by_hour['index'][0].astype(str) + "h and " + (
+                                start_times_by_hour['index'][0] + 1).astype(str) + "h")
 
                     st.markdown("""---""")
 
@@ -151,21 +160,26 @@ if uploaded_file is not None:
 
                     st.markdown("""---""")
 
-                    st.subheader('Worktime watcher? The percentage of time spent on Netflix during working hours (9am-5pm) on workdays is')
-                    worktime = df[df['Weekday'] < 5]['Hour'].value_counts().reset_index().sort_values('index')[9:17]['Hour'].sum()
+                    st.subheader(
+                        'Worktime watcher? The percentage of time spent on Netflix during working hours (9am-5pm) on workdays is')
+                    worktime = df[df['Weekday'] < 5]['Hour'].value_counts().reset_index().sort_values('index')[9:17][
+                        'Hour'].sum()
                     write(round(((worktime / total_hours) * 100), 2).astype(str) + '%')
 
                     st.markdown("""---""")
 
-                    st.subheader('Your overall time spent watching Netflix since the creation of your profile is approximately')
+                    st.subheader(
+                        'Your overall time spent watching Netflix since the creation of your profile is approximately')
                     overall_time_spent = df['Duration'].sum()
                     overall_time_spent_hours = int(overall_time_spent.total_seconds() / (60 * 60))
-                    write(str(overall_time_spent_hours) + " hours (that's " + str(overall_time_spent).split(' ')[0] + " days!)")
+                    write(str(overall_time_spent_hours) + " hours (that's " + str(overall_time_spent).split(' ')[
+                        0] + " days!)")
 
                     st.markdown("""---""")
 
                     st.subheader("Here's a breakdown of your watching time by year")
-                    time_spent_by_year = df.groupby('Year')['Duration'].sum().reset_index().to_string(index=False).split('\n')[1:]
+                    time_spent_by_year = df.groupby('Year')['Duration'].sum().reset_index().to_string(
+                        index=False).split('\n')[1:]
                     for year in time_spent_by_year:
                         write(year.strip().replace(' ', ' :  ', 1))
 
@@ -173,8 +187,10 @@ if uploaded_file is not None:
 
                     max_year = df['Year'].max()
                     st.subheader("And here's how you're doing by month in " + str(max_year))
-                    time_spent_by_month_2022 = df[df['Year'] == max_year].groupby('Month')['Duration'].sum().reset_index()
-                    time_spent_by_month_2022['Month'] = time_spent_by_month_2022['Month'].apply(lambda x: calendar.month_name[x])
+                    time_spent_by_month_2022 = df[df['Year'] == max_year].groupby('Month')[
+                        'Duration'].sum().reset_index()
+                    time_spent_by_month_2022['Month'] = time_spent_by_month_2022['Month'].apply(
+                        lambda x: calendar.month_name[x])
                     time_spent_by_month_2022 = time_spent_by_month_2022.to_string(index=False).split('\n')[1:]
                     for month in time_spent_by_month_2022:
                         write(month.strip().replace(' ', ' : ', 1))
@@ -189,9 +205,11 @@ if uploaded_file is not None:
 
                     time_spent_pct = str(round((ytd_netflix / ytd_time) * 100, 2))
                     st.subheader(ytd_time + ". That's the amount of time that has passed in " + str(max_year) +
-                                 " up until today. Given that you have spent " + str(ytd_netflix).split(' ')[0] + " days " +
+                                 " up until today. Given that you have spent " + str(ytd_netflix).split(' ')[
+                                     0] + " days " +
                                  "and " + str(ytd_netflix).split(' ')[2].split(':')[0] + " hours " + "(" +
-                                 str(int(str(ytd_netflix).split(' ')[0]) * 24 + int(str(ytd_netflix).split(' ')[2].split(':')[0])) +
+                                 str(int(str(ytd_netflix).split(' ')[0]) * 24 + int(
+                                     str(ytd_netflix).split(' ')[2].split(':')[0])) +
                                  " hours)" + " of it on Netflix, you have spent")
                     write(time_spent_pct + '%')
                     st.subheader("of your time watching Netflix in " + str(max_year) + ".")
@@ -202,7 +220,8 @@ if uploaded_file is not None:
                     st.subheader("Here's some information on your longest single day binge")
                     single_day_binge = df.groupby(['Year', 'Month', 'Day'])['Duration'].sum().reset_index()
                     single_day_binge = single_day_binge.rename(columns={"Duration": "Sum_Duration"})
-                    single_day_binge = pd.merge(df, single_day_binge, how='inner', left_on=['Year', 'Month', 'Day'], right_on=['Year', 'Month', 'Day'])
+                    single_day_binge = pd.merge(df, single_day_binge, how='inner', left_on=['Year', 'Month', 'Day'],
+                                                right_on=['Year', 'Month', 'Day'])
                     max_binge_time = single_day_binge['Sum_Duration'].max()
                     single_day_binge = single_day_binge[single_day_binge['Sum_Duration'] == max_binge_time]
                     st.subheader('This sitting went on for')
@@ -210,7 +229,8 @@ if uploaded_file is not None:
                     st.subheader('It started at ')
                     write(str(single_day_binge['Start_Time'].min()).split('+')[0])
                     st.subheader("And ended at")
-                    write((str(single_day_binge['Start_Time'].max() + single_day_binge['Duration'].iloc[0])).split('+')[0])
+                    write((str(single_day_binge['Start_Time'].max() + single_day_binge['Duration'].iloc[0])).split('+')[
+                              0])
                     st.subheader('You started off with watching')
                     write(single_day_binge['Title'][-1:].to_string(index=False) + ' -'
                           + single_day_binge['Season'][-1:].to_string(index=False)
@@ -225,9 +245,11 @@ if uploaded_file is not None:
                     st.subheader("These are the shows that you spent most time watching")
                     most_popular_titles = df.groupby(['Title'])['Duration'].sum().reset_index()
                     most_popular_titles = most_popular_titles.rename(columns={"Duration": "Total_Duration"})
-                    most_popular_titles = most_popular_titles.sort_values(by='Total_Duration', ascending=False).reset_index(drop=True)[:5]
+                    most_popular_titles = most_popular_titles.sort_values(by='Total_Duration',
+                                                                          ascending=False).reset_index(drop=True)[:5]
 
-                    top_5 = [f"%s - %s" % title for title in zip(most_popular_titles['Title'], most_popular_titles['Total_Duration'])]
+                    top_5 = [f"%s - %s" % title for title in
+                             zip(most_popular_titles['Title'], most_popular_titles['Total_Duration'])]
                     for i in range(len(top_5)):
                         write(str(i + 1) + '. ' + top_5[i])
 
@@ -235,7 +257,8 @@ if uploaded_file is not None:
             st.subheader("flix-GPT")
             st.write("query your Netflix data using natural language.")
             st.dataframe(df.head())
-            query = st.textbox(label='pandasai', placeholder='Ask me about your Netflix data', label_visibility='collapsed')
+            query = st.textbox(label='pandasai', placeholder='Ask me about your Netflix data',
+                               label_visibility='collapsed')
             pandas_ai = PandasAI(llm, conversational=False)
             if query:
                 response = pandas_ai.run(df, prompt=query)
@@ -245,7 +268,6 @@ if uploaded_file is not None:
         print(ke)
     except NameError as ne:
         print(ne)
-
 
 hide_streamlit_style = """
                        <style>
@@ -263,7 +285,7 @@ hide_streamlit_style = """
                        """
 st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
-#MainMenu {visibility: hidden;}
+# MainMenu {visibility: hidden;}
 
 
 ########################################################################################################################
