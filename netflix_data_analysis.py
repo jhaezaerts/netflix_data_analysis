@@ -152,9 +152,7 @@ if uploaded_file is not None:
 
                     st.markdown("""---""")
 
-                    st.write(start_times_by_hour.sort_values('Hour')[6:12])
-                    morning_hours = start_times_by_hour.sort_values('Hour')[6:12]['Hour'].sum()
-                    st.write(start_times_by_hour)
+                    morning_hours = start_times_by_hour.sort_values('Hour')[6:12]['count'].sum()
                     total_hours = start_times_by_hour['Hour'].sum()
                     st.subheader('Morning person? Out of all the time you have spent watching Netflix, ')
                     write(round(((morning_hours / total_hours) * 100), 2).astype(str) + '%')
@@ -164,7 +162,7 @@ if uploaded_file is not None:
 
                     st.subheader(
                         'Worktime watcher? The percentage of time spent on Netflix during working hours (9am-5pm) on workdays is')
-                    worktime = df[df['Weekday'] < 5]['Hour'].value_counts().reset_index().sort_values('index')[9:17][
+                    worktime = df[df['Weekday'] < 5]['Hour'].value_counts().reset_index().sort_values('Hour')[9:17][
                         'Hour'].sum()
                     write(round(((worktime / total_hours) * 100), 2).astype(str) + '%')
 
