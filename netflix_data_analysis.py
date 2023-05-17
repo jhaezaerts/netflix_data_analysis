@@ -152,8 +152,8 @@ if uploaded_file is not None:
 
                     st.markdown("""---""")
 
-                    st.write(start_times_by_hour)
-                    morning_hours = start_times_by_hour.sort_values('index')[6:12]['Hour'].sum()
+                    st.write(start_times_by_hour.sort_values('Hour'))
+                    morning_hours = start_times_by_hour.sort_values('Hour')[6:12]['Hour'].sum()
                     st.write(start_times_by_hour)
                     total_hours = start_times_by_hour['Hour'].sum()
                     st.subheader('Morning person? Out of all the time you have spent watching Netflix, ')
