@@ -147,7 +147,7 @@ if uploaded_file is not None:
                     st.markdown("""---""")
 
                     st.subheader('Your favourite day of the week for watching Netflix is')
-                    write(df['Weekday'].value_counts().reset_index())
+                    st.write(df['Weekday'].value_counts().reset_index())
                     start_times_by_day = df['Weekday'].value_counts().reset_index()
                     write(calendar.day_name[start_times_by_day['index'][0]])
 
