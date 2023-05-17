@@ -255,6 +255,8 @@ if uploaded_file is not None:
                         write(str(i + 1) + '. ' + top_5[i])
 
         with t2:
+            st.write("test")
+            """
             st.subheader("flix-GPT")
             st.write("query your Netflix data using natural language.")
             st.dataframe(df.head())
@@ -264,7 +266,7 @@ if uploaded_file is not None:
             if query:
                 response = pandas_ai.run(df, prompt=query)
             st.write(response)
-
+            """
     except KeyError as ke:
         print(ke)
     except NameError as ne:
