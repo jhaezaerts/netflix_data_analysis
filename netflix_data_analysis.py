@@ -141,8 +141,8 @@ if uploaded_file is not None:
                     st.markdown("""---""")
 
                     start_times_by_hour = df['Hour'].value_counts().reset_index()
-                    st.subheader("You're most likely to be watching Netflix between ")
-                    st.write(start_times_by_hour)
+                    st.subheader("You're most likely to be watching Netflix around ")
+                    st.write(start_times_by_hour['Hour'][0].to_string())
                     write(start_times_by_hour['index'][0].to_string(index=False) + "h and " + (
                             start_times_by_hour['index'][0] + 1).to_string(index=False) + "h")
                     write(start_times_by_hour['index'][0].astype(str) + "h and " + (
