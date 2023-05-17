@@ -18,7 +18,7 @@ import openai
 
 
 def write(text):
-    st.markdown(f'<p style="color:#E50914;font-size:28px;border-radius:2%;"><strong>{text}</strong></p>',
+    st.markdown(f'<p style="color:#E50914;font-size:28px;border-radius:2%;"><strong>{str(text)}</strong></p>',
                 unsafe_allow_html=True)
 
 
@@ -143,8 +143,8 @@ if uploaded_file is not None:
                     start_times_by_hour = df['Hour'].value_counts().reset_index()
                     st.subheader("You're most likely to be watching Netflix between ")
                     write("test")
-                    #write(start_times_by_hour['index'][0].astype(str) + "h and " + (
-                    #            start_times_by_hour['index'][0] + 1).astype(str) + "h")
+                    write(start_times_by_hour['index'][0].astype(str) + "h and " + (
+                                start_times_by_hour['index'][0] + 1).astype(str) + "h")
                     write("another test")
                     st.markdown("""---""")
 
