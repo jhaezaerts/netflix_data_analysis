@@ -142,7 +142,8 @@ if uploaded_file is not None:
 
                     start_times_by_hour = df['Hour'].value_counts().reset_index()
                     st.subheader("You're most likely to be watching Netflix between ")
-                    write("test")
+                    write(str(start_times_by_hour['index'][0]) + "h and " + (
+                            str(start_times_by_hour['index'][0] + 1)) + "h")
                     write(start_times_by_hour['index'][0].astype(str) + "h and " + (
                                 start_times_by_hour['index'][0] + 1).astype(str) + "h")
                     write("another test")
