@@ -152,7 +152,7 @@ if uploaded_file is not None:
 
                     st.markdown("""---""")
 
-                    st.write(start_times_by_hour.sort_values('Hour'))
+                    st.write(start_times_by_hour.sort_values('Hour')[6:12]['Hour'])
                     morning_hours = start_times_by_hour.sort_values('Hour')[6:12]['Hour'].sum()
                     st.write(start_times_by_hour)
                     total_hours = start_times_by_hour['Hour'].sum()
