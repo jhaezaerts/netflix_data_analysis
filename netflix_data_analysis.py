@@ -153,7 +153,7 @@ if uploaded_file is not None:
                     st.markdown("""---""")
 
                     morning_hours = start_times_by_hour.sort_values('index')[6:12]['Hour'].sum()
-                    st.write(start_times_by_hour.sort_values('index'))
+                    st.write(start_times_by_hour)
                     total_hours = start_times_by_hour['Hour'].sum()
                     st.subheader('Morning person? Out of all the time you have spent watching Netflix, ')
                     write(round(((morning_hours / total_hours) * 100), 2).astype(str) + '%')
