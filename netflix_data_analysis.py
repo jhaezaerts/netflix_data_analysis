@@ -118,6 +118,7 @@ if uploaded_file is not None:
         df = df[
             ['Profile_Name', 'Start_Time', 'Duration', 'Country', 'Weekday', 'Hour', 'Day', 'Month', 'Year', 'Title',
              'Season', 'Episode']]
+        df_gpt = df.copy()
 
         ########################################################################################################################
         # Main Page II
@@ -153,7 +154,7 @@ if uploaded_file is not None:
                     st.markdown("""---""")
 
                     morning_hours = start_times_by_hour.sort_values('Hour')[6:12]['count'].sum()
-                    total_hours = start_times_by_hour['Hour'].sum()
+                    total_hours = start_times_by_hour['count'].sum()
                     st.subheader('Morning person? Out of all the time you have spent watching Netflix, ')
                     write(round(((morning_hours / total_hours) * 100), 2).astype(str) + '%')
                     st.subheader(' of it occurred before noon (6am-12pm)')
@@ -163,7 +164,7 @@ if uploaded_file is not None:
                     st.subheader(
                         'Worktime watcher? The percentage of time spent on Netflix during working hours (9am-5pm) on workdays is')
                     worktime = df[df['Weekday'] < 5]['Hour'].value_counts().reset_index().sort_values('Hour')[9:17][
-                        'Hour'].sum()
+                        'count'].sum()
                     write(round(((worktime / total_hours) * 100), 2).astype(str) + '%')
 
                     st.markdown("""---""")
@@ -254,18 +255,17 @@ if uploaded_file is not None:
                         write(str(i + 1) + '. ' + top_5[i])
 
         with t2:
-            st.write("test")
-            """
-            st.subheader("flix-GPT")
-            st.write("query your Netflix data using natural language.")
-            st.dataframe(df.head())
-            query = st.textbox(label='pandasai', placeholder='Ask me about your Netflix data',
-                               label_visibility='collapsed')
+            st.subheader("Netflix-GPT")
+            st.write("Extract insights from your Netflix data using natural language.")
+            # BUG! Streamlit cannot display dataframes with special dtypes (e.g. timedelta)
+            # st.dataframe(df.head())
+            query = st.text_input(label='pandasai', placeholder='Ask me about your Netflix data...',
+                                  label_visibility='collapsed')
             pandas_ai = PandasAI(llm, conversational=False)
             if query:
-                response = pandas_ai.run(df, prompt=query)
+                response = pandas_ai.run(df_gpt, prompt=query)
             st.write(response)
-            """
+
     except KeyError as ke:
         print(ke)
     except NameError as ne:
